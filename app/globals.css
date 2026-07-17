@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #EAE3CC;
+  color: #23201B;
+}
+.rh-display { font-family: 'Lora', serif; }
+.rh-mono { font-family: 'IBM Plex Mono', monospace; }
+.rh-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.rh-scroll::-webkit-scrollbar-thumb { background: #B8863B55; border-radius: 4px; }
+.rh-btn { transition: transform .12s ease, box-shadow .12s ease; }
+.rh-btn:active { transform: scale(0.97); }
+.rh-station { transition: all .25s ease; }
+.rh-spin { animation: rh-rotate 1s linear infinite; }
+@keyframes rh-rotate { to { transform: rotate(360deg); } }

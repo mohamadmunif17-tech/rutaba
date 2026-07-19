@@ -528,15 +528,16 @@ export default function Home() {
   const existingKelas = useMemo(() => Array.from(new Set(plans.map(p => p.kelas || "Umum"))).length ? Array.from(new Set(plans.map(p => p.kelas || "Umum"))) : ["Umum"], [plans]);
 
   const refresh = useCallback(async () => {
-    if (!isSupabaseConfigured()) { setConfigError(true); setLoading(false); return; }
+    if (!isSupabaseConfigured()) { setConfigError({ reason: "missing_env" }); setLoading(false); return; }
     setLoading(true);
     try {
       const list = await listPlans();
       setPlans(list);
       if (list.length && !list.find(p => p.id === selectedId)) setSelectedId(list[0].id);
       if (!list.length) setShowForm(true);
+      setConfigError(false);
     } catch (e) {
-      setConfigError(true);
+      setConfigError({ reason: "query_failed", message: e?.message || String(e), details: e });
     }
     setLoading(false);
   }, [selectedId]);
@@ -610,14 +611,25 @@ export default function Home() {
     return (
       <div style={{ maxWidth: 560, margin: "60px auto", padding: 24, background: "#FFFDF8", border: "1px solid #E4DBC3", borderRadius: 14, fontFamily: "Inter" }}>
         <div style={{ display: "flex", gap: 8, alignItems: "center", color: "#9B4444", fontWeight: 700, marginBottom: 8 }}>
-          <AlertCircle size={18} /> Supabase belum dikonfigurasi
+          <AlertCircle size={18} /> {configError.reason === "missing_env" ? "Supabase belum dikonfigurasi" : "Gagal terhubung ke database"}
         </div>
-        <p style={{ fontSize: 14, color: "#5C5647", lineHeight: 1.6 }}>
-          Isi <code>NEXT_PUBLIC_SUPABASE_URL</code> dan <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> di file <code>.env.local</code> (lokal) atau Environment Variables project Vercel Anda, lalu deploy ulang. Lihat README.md untuk langkah lengkap.
-        </p>
-        <div style={{ marginTop: 16, padding: 12, background: "#F2ECD9", borderRadius: 8, fontSize: 12, fontFamily: "monospace" }}>
+        {configError.reason === "missing_env" ? (
+          <p style={{ fontSize: 14, color: "#5C5647", lineHeight: 1.6 }}>
+            Isi <code>NEXT_PUBLIC_SUPABASE_URL</code> dan <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> di file <code>.env.local</code> (lokal) atau Environment Variables project Vercel Anda, lalu deploy ulang. Lihat README.md untuk langkah lengkap.
+          </p>
+        ) : (
+          <p style={{ fontSize: 14, color: "#5C5647", lineHeight: 1.6 }}>
+            Koneksi ke Supabase berhasil disiapkan, tapi query ke database gagal. Kemungkinan penyebab: tabel belum dibuat (jalankan <code>supabase/schema.sql</code>), kebijakan RLS belum sesuai, atau anon key tidak punya akses. Pesan error asli ditampilkan di bawah ini.
+          </p>
+        )}
+        <div style={{ marginTop: 16, padding: 12, background: "#F2ECD9", borderRadius: 8, fontSize: 12, fontFamily: "monospace", wordBreak: "break-word" }}>
           <div>URL terdeteksi: {dbg.urlPresent ? `Ya (${dbg.urlPreview})` : "TIDAK — kosong"}</div>
           <div>ANON KEY terdeteksi: {dbg.keyPresent ? `Ya (panjang: ${dbg.keyLength} karakter)` : "TIDAK — kosong"}</div>
+          {configError.reason === "query_failed" && (
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid #D8CFB6", color: "#9B4444" }}>
+              Pesan error: {configError.message}
+            </div>
+          )}
         </div>
       </div>
     );

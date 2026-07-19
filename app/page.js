@@ -14,7 +14,7 @@ import {
   listPlans, savePlan, deletePlan, listProgress, toggleProgress,
   getMonthlyNote, saveMonthlyNote,
 } from "../lib/dataStore";
-import { isSupabaseConfigured } from "../lib/supabaseClient";
+import { isSupabaseConfigured, debugSupabaseEnv } from "../lib/supabaseClient";
 import { generateMonthlyReportPdf } from "../lib/pdfReport";
 
 const LEMBAGA_NAME = process.env.NEXT_PUBLIC_LEMBAGA_NAME || "RUTABA SHOHIBUL QUR'AN";
@@ -606,6 +606,7 @@ export default function Home() {
   }
 
   if (configError) {
+    const dbg = debugSupabaseEnv();
     return (
       <div style={{ maxWidth: 560, margin: "60px auto", padding: 24, background: "#FFFDF8", border: "1px solid #E4DBC3", borderRadius: 14, fontFamily: "Inter" }}>
         <div style={{ display: "flex", gap: 8, alignItems: "center", color: "#9B4444", fontWeight: 700, marginBottom: 8 }}>
@@ -614,6 +615,10 @@ export default function Home() {
         <p style={{ fontSize: 14, color: "#5C5647", lineHeight: 1.6 }}>
           Isi <code>NEXT_PUBLIC_SUPABASE_URL</code> dan <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> di file <code>.env.local</code> (lokal) atau Environment Variables project Vercel Anda, lalu deploy ulang. Lihat README.md untuk langkah lengkap.
         </p>
+        <div style={{ marginTop: 16, padding: 12, background: "#F2ECD9", borderRadius: 8, fontSize: 12, fontFamily: "monospace" }}>
+          <div>URL terdeteksi: {dbg.urlPresent ? `Ya (${dbg.urlPreview})` : "TIDAK — kosong"}</div>
+          <div>ANON KEY terdeteksi: {dbg.keyPresent ? `Ya (panjang: ${dbg.keyLength} karakter)` : "TIDAK — kosong"}</div>
+        </div>
       </div>
     );
   }
